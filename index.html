@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="bn" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anik Ahmed - Personal Portfolio</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Hind Siliguri, Inter & Cinzel for Headers -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Three.js Library for 3D Graphics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        maroon: {
+                            50: '#fdf2f4',
+                            100: '#fbe5e8',
+                            500: '#a31632',
+                            600: '#800020',
+                            700: '#68001a',
+                            800: '#520015',
+                            900: '#3d0010',
+                        },
+                        skyblue: {
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Hind Siliguri', 'sans-serif'],
+                        bn: ['Hind Siliguri', 'sans-serif'],
+                        logo: ['Cinzel', 'Inter', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Glassmorphism Styling */
+        .glassmorphic {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .light .glassmorphic {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(128, 0, 32, 0.15);
+        }
+        
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Neon Glow Effects */
+        .glow-maroon {
+            box-shadow: 0 0 25px rgba(128, 0, 32, 0.4);
+        }
+        .glow-skyblue {
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+        }
+
+        /* Text Gradient */
+        .text-gradient {
+            background: linear-gradient(135deg, #38bdf8 0%, #800020 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 3D Canvas Container overlay */
+        #alien-canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* Custom Speech Bubble Animation */
+        @keyframes floatBubble {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-8px) scale(1.05); }
+        }
+        .speech-bubble {
+            animation: floatBubble 2.5s infinite ease-in-out;
+        }
+
+        /* --- CUSTOM SCROLL/VISIBILITY ANIMATIONS --- */
+        
+        /* 1. About Me: Top-to-Bottom Entrance */
+        .anim-top-down {
+            opacity: 0;
+            transform: translateY(-60px);
+            transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .anim-top-down.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 2. Hobbies: 4 Corners Merge Animation */
+        .hobby-card {
+            opacity: 0;
+            transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .hobby-tl { transform: translate(-80px, -80px); }
+        .hobby-tr { transform: translate(80px, -80px); }
+        .hobby-bl { transform: translate(-80px, 80px); }
+        .hobby-br { transform: translate(80px, 80px); }
+
+        .hobby-card.visible {
+            opacity: 1;
+            transform: translate(0, 0);
+        }
+
+        /* 3. Find Me Online: Bottom-to-Top Slide */
+        .anim-bottom-up {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .anim-bottom-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Typewriter Cursor Effect */
+        .typewriter-cursor::after {
+            content: '|';
+            animation: blink 0.8s infinite;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-500 min-h-screen flex flex-col font-sans overflow-x-hidden relative">
+
+    <!-- Audio Element -->
+    <audio id="bg-audio" loop preload="auto">
+        <source src="https://docs.google.com/uc?export=download&id=1bv-Yzvphzfsep417HkiwaQF0UhHHinPx" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- 3D Alien Overlay Canvas & HTML Dialog Container -->
+    <div id="alien-canvas-container">
+        <canvas id="alien-canvas" class="w-full h-full"></canvas>
+        <div id="alien-dialog" class="absolute pointer-events-auto transition-all duration-300 opacity-0 scale-50 speech-bubble transform -translate-x-1/2 -translate-y-full" style="display: none;">
+            <div class="bg-maroon-600 text-white font-bold px-5 py-3 rounded-2xl shadow-2xl border-2 border-skyblue-400 flex items-center gap-2">
+                <span id="alien-text" class="text-xl">Hi! 👋</span>
+            </div>
+            <!-- Arrow pointing down -->
+            <div class="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[12px] border-t-maroon-600 mx-auto"></div>
+        </div>
+    </div>
+
+    <!-- Navigation / Floating Top Header Bar -->
+    <header class="fixed top-4 left-1/2 -translate-x-1/2 w-[92%] max-w-5xl z-40">
+        <nav class="glassmorphic rounded-full px-6 py-3 flex items-center justify-between shadow-xl border border-slate-700/40">
+            <!-- Brand / Logo -> Updated to "ANIK AHMED" in stylish font -->
+            <a href="#" class="flex items-center gap-3 font-bold tracking-wider group">
+                <span class="w-9 h-9 rounded-full bg-gradient-to-tr from-maroon-600 to-skyblue-400 flex items-center justify-center text-white text-xs font-black shadow-md group-hover:scale-105 transition-transform">AA</span>
+                <span class="font-logo text-slate-900 dark:text-white text-base md:text-lg font-extrabold tracking-widest group-hover:text-skyblue-400 transition-colors">
+                    Anio Studies 
+                </span>
+            </a>
+
+            <!-- Control Bar (Theme, Music, Language switches) -->
+            <div class="flex items-center gap-3 md:gap-4">
+                <!-- 1. Music Toggle -->
+                <button id="music-btn" title="Toggle Background Music" class="p-2.5 rounded-full bg-slate-200/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:text-skyblue-400 dark:hover:text-skyblue-400 transition-all hover:scale-110 flex items-center justify-center w-10 h-10 border border-slate-300/30 dark:border-slate-700/50">
+                    <i id="music-icon" class="fa-solid fa-music"></i>
+                </button>
+
+                <!-- 2. Dark/Light Mode Switch -->
+                <button id="theme-btn" title="Toggle Dark/Light Mode" class="p-2.5 rounded-full bg-slate-200/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:text-amber-400 transition-all hover:scale-110 flex items-center justify-center w-10 h-10 border border-slate-300/30 dark:border-slate-700/50">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+
+                <!-- 3. Language Switcher -->
+                <button id="lang-btn" title="Switch Language" class="px-3 py-1.5 rounded-full bg-maroon-600 hover:bg-maroon-700 text-white font-medium text-xs md:text-sm tracking-wide transition-all hover:shadow-lg hover:shadow-maroon-600/30 flex items-center gap-1.5 border border-maroon-500">
+                    <i class="fa-solid fa-globe"></i>
+                    <span id="lang-text">EN</span>
+                </button>
+
+                <!-- Replay Alien Animation Button -->
+                <button id="alien-replay-btn" title="Replay Alien Animation" class="p-2.5 rounded-full bg-slate-200/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:text-purple-400 transition-all hover:scale-110 flex items-center justify-center w-10 h-10 border border-slate-300/30 dark:border-slate-700/50">
+                    <i class="fa-solid fa-shuttle-space"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow pt-28 pb-16 px-4 max-w-5xl mx-auto w-full space-y-20">
+
+        <!-- HERO SECTION -->
+        <section class="flex flex-col md:flex-row items-center justify-between gap-10 pt-8 min-h-[70vh]">
+            <div class="flex-1 space-y-6 text-center md:text-left">
+                <div class="inline-block px-4 py-1.5 rounded-full bg-maroon-600/10 border border-maroon-600/30 text-maroon-600 dark:text-skyblue-400 font-semibold text-sm tracking-wider uppercase backdrop-blur-md">
+                    <span data-en="Welcome to my Portfolio" data-bn="আমার পোর্টফোলিওতে স্বাগতম">Welcome to my Portfolio</span>
+                </div>
+                
+                <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight">
+                    <span data-en="Hello, I'm" data-bn="হ্যালো, আমি">Hello, I'm</span><br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-skyblue-400 via-maroon-500 to-maroon-700 dark:from-skyblue-400 dark:to-maroon-500 text-5xl md:text-7xl font-black block mt-1" data-en="ANIK AHMED" data-bn="অনিক আহমেদ">
+                        ANIK AHMED
+                    </span>
+                </h1>
+
+                <p class="text-lg md:text-xl text-slate-600 dark:text-slate-300 font-medium" data-en="Student & Aspiring Developer" data-bn="শিক্ষার্থী ও উদীয়মান ডেভেলপার">
+                    Student & Aspiring Developer
+                </p>
+
+                <div class="pt-2 flex flex-wrap gap-4 justify-center md:justify-start">
+                    <a href="#about" class="px-6 py-3 rounded-full bg-maroon-600 hover:bg-maroon-700 text-white font-semibold shadow-lg shadow-maroon-600/30 hover:shadow-maroon-600/50 hover:-translate-y-0.5 transition-all" data-en="About Me" data-bn="আমার সম্পর্কে">About Me</a>
+                    <a href="#contact" class="px-6 py-3 rounded-full glassmorphic text-slate-800 dark:text-white font-semibold hover:border-skyblue-400 hover:-translate-y-0.5 transition-all" data-en="Connect With Me" data-bn="যোগাযোগ করুন">Connect With Me</a>
+                </div>
+            </div>
+
+            <!-- Profile Image Container -->
+            <div class="relative group">
+                <!-- Decorative Outer Glow Ring -->
+                <div class="absolute -inset-1.5 bg-gradient-to-r from-maroon-600 to-skyblue-400 rounded-full blur-xl opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+                
+                <div class="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-slate-200 dark:border-slate-800 shadow-2xl">
+                    <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi4nZimsyeEQ-6msCwgBQufoMiHYqoVXsMwktBg-Nbaz98LFLN-5stwPtX95kA7b8NctFvf6nOr7FVXjY2MlyBITHreRxqRzz_CF8FccF4tmtEyfT7T6m6ceER77AGPZX2IGNTDN5JwFZ4kdGz4yCpxCvV-JpwFj8n4Rp2OL64_am6-pu_JGb672CVF_2n5/s2932/retouch_2026071812562180.jpg" 
+                         alt="ANIK AHMED" 
+                         class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                         onerror="this.src='https://placehold.co/400x400/800020/ffffff?text=Anik+Ahmed'">
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT ME SECTION (Top-to-Bottom Entrance) -->
+        <section id="about" class="scroll-mt-28">
+            <div class="anim-top-down glassmorphic rounded-3xl p-8 md:p-12 relative overflow-hidden border border-slate-700/30">
+                <div class="absolute -right-16 -bottom-16 w-64 h-64 bg-maroon-600/20 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-maroon-600/20 flex items-center justify-center text-maroon-600 dark:text-skyblue-400 text-xl font-bold">
+                        <i class="fa-solid fa-user-astronaut"></i>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white" data-en="About Me" data-bn="আমার পরিচিতি">About Me</h2>
+                </div>
+
+                <p class="text-slate-700 dark:text-slate-200 text-lg md:text-xl leading-relaxed font-normal"
+                   data-en="I am Anik Ahmed, a passionate learner who believes that true growth comes from continuous learning and sharing knowledge."
+                   data-bn="আমি অনিক আহমেদ, একজন ব্যাকুল শিক্ষার্থী যিনি বিশ্বাস করেন যে প্রকৃত উন্নতি আসে ক্রমাগত শেখা এবং জ্ঞান ভাগ করে নেওয়ার মাধ্যমে।">
+                   I am Anik Ahmed, a passionate learner who believes that true growth comes from continuous learning and sharing knowledge.
+                </p>
+            </div>
+        </section>
+
+        <!-- HOBBIES & INTERESTS SECTION (4 Corner Convergence) -->
+        <section id="hobbies" class="scroll-mt-28">
+            <div class="space-y-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-skyblue-500/20 flex items-center justify-center text-skyblue-500 text-xl font-bold">
+                        <i class="fa-solid fa-laptop-code"></i>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white" data-en="Hobbies & Interests" data-bn="শখ ও আগ্রহের বিষয়">Hobbies & Interests</h2>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 overflow-hidden p-2">
+                    <!-- Interest Item 1: Top-Left -->
+                    <div class="hobby-card hobby-tl glassmorphic p-6 rounded-2xl flex flex-col items-center justify-center gap-3 group hover:border-skyblue-400 hover:scale-[1.03] transition-all">
+                        <i class="fa-solid fa-code text-3xl text-skyblue-400 group-hover:rotate-12 transition-transform"></i>
+                        <span class="font-semibold text-slate-800 dark:text-slate-200 text-center" data-en="Coding" data-bn="কোডিং">Coding</span>
+                    </div>
+
+                    <!-- Interest Item 2: Top-Right -->
+                    <div class="hobby-card hobby-tr glassmorphic p-6 rounded-2xl flex flex-col items-center justify-center gap-3 group hover:border-maroon-500 hover:scale-[1.03] transition-all">
+                        <i class="fa-solid fa-terminal text-3xl text-maroon-500 group-hover:-rotate-12 transition-transform"></i>
+                        <span class="font-semibold text-slate-800 dark:text-slate-200 text-center" data-en="Programming" data-bn="প্রোগ্রামিং">Programming</span>
+                    </div>
+
+                    <!-- Interest Item 3: Bottom-Left -->
+                    <div class="hobby-card hobby-bl glassmorphic p-6 rounded-2xl flex flex-col items-center justify-center gap-3 group hover:border-skyblue-400 hover:scale-[1.03] transition-all">
+                        <i class="fa-solid fa-layer-group text-3xl text-skyblue-400 group-hover:rotate-12 transition-transform"></i>
+                        <span class="font-semibold text-slate-800 dark:text-slate-200 text-center" data-en="Web Development" data-bn="ওয়েব ডেভেলপমেন্ট">Web Development</span>
+                    </div>
+
+                    <!-- Interest Item 4: Bottom-Right -->
+                    <div class="hobby-card hobby-br glassmorphic p-6 rounded-2xl flex flex-col items-center justify-center gap-3 group hover:border-maroon-500 hover:scale-[1.03] transition-all">
+                        <i class="fa-solid fa-puzzle-piece text-3xl text-maroon-500 group-hover:-rotate-12 transition-transform"></i>
+                        <span class="font-semibold text-slate-800 dark:text-slate-200 text-center" data-en="Problem Solving" data-bn="সমস্যা সমাধান">Problem Solving</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FIND ME ONLINE SECTION (Bottom-to-Top Animation) -->
+        <section id="contact" class="scroll-mt-28">
+            <div class="space-y-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-maroon-600/20 flex items-center justify-center text-maroon-600 dark:text-skyblue-400 text-xl font-bold">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white" data-en="Find Me Online" data-bn="অনলাইনে আমার সাথে জুড়ুন">Find Me Online</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Facebook -->
+                    <a href="https://www.facebook.com/share/1E5NTrYp4H/" target="_blank" rel="noopener noreferrer" class="anim-bottom-up glassmorphic p-5 rounded-2xl flex items-center justify-between hover:border-blue-500 hover:bg-blue-500/10 transition-all group">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-blue-600/20 text-blue-500 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-white">Facebook</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Connect on Facebook</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-slate-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all"></i>
+                    </a>
+
+                    <!-- Instagram -->
+                    <a href="https://www.instagram.com/anik.hey?rpxt=MTZ2ZWl6aHpwdWxzcg==" target="_blank" rel="noopener noreferrer" class="anim-bottom-up glassmorphic p-5 rounded-2xl flex items-center justify-between hover:border-pink-500 hover:bg-pink-500/10 transition-all group" style="transition-delay: 100ms;">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-pink-600/20 text-pink-500 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fa-brands fa-instagram"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-white">Instagram</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Follow on Instagram</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-slate-400 group-hover:text-pink-500 group-hover:translate-x-1 transition-all"></i>
+                    </a>
+
+                    <!-- GitHub Project -->
+                    <a href="https://anikbrohey.github.io/Expense-tracker/" target="_blank" rel="noopener noreferrer" class="anim-bottom-up glassmorphic p-5 rounded-2xl flex items-center justify-between hover:border-slate-400 hover:bg-slate-500/10 transition-all group" style="transition-delay: 200ms;">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-slate-700/20 text-slate-800 dark:text-white flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fa-brands fa-github"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-white">GitHub Project</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Expense Tracker App</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-slate-400 group-hover:text-slate-200 group-hover:translate-x-1 transition-all"></i>
+                    </a>
+
+                    <!-- Personal Website -->
+                    <a href="https://anikoff.gt.tc/?i=1" target="_blank" rel="noopener noreferrer" class="anim-bottom-up glassmorphic p-5 rounded-2xl flex items-center justify-between hover:border-skyblue-400 hover:bg-skyblue-400/10 transition-all group" style="transition-delay: 300ms;">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-skyblue-500/20 text-skyblue-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-globe"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 dark:text-white">Personal Website</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Visit Anik's Web Portal</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-slate-400 group-hover:text-skyblue-400 group-hover:translate-x-1 transition-all"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- FUTURE GOALS SECTION (Typewriter Animation) -->
+        <section id="goals" class="scroll-mt-28">
+            <div class="glassmorphic rounded-3xl p-8 md:p-12 border border-maroon-600/30 text-center space-y-4 relative overflow-hidden">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-maroon-600 to-skyblue-400 text-white mx-auto flex items-center justify-center text-2xl shadow-lg shadow-maroon-600/30 mb-2">
+                    <i class="fa-solid fa-bullseye"></i>
+                </div>
+
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white" data-en="Future Goals" data-bn="ভবিষ্যতের লক্ষ্য">Future Goals</h2>
+
+                <div class="min-h-[90px] flex items-center justify-center">
+                    <p id="typewriter-text" class="text-slate-700 dark:text-slate-200 text-lg md:text-2xl max-w-3xl mx-auto italic font-medium leading-relaxed typewriter-cursor"
+                       data-en="&ldquo;To grow as a human being, help people with technology and live a life guided by faith.&rdquo;"
+                       data-bn="&ldquo;মানুষ হিসেবে বেড়ে ওঠা, প্রযুক্তির মাধ্যমে মানুষকে সাহায্য করা এবং বিশ্বাসের পথে পরিচালিত একটি জীবনযাপন করা।&rdquo;">
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="mt-auto py-8 text-center text-sm border-t border-slate-800/50 glassmorphic">
+        <div class="max-w-5xl mx-auto px-4 space-y-2">
+            <p class="font-semibold text-slate-700 dark:text-slate-300 tracking-wider" 
+               data-en="Built with focus, patience & faith." 
+               data-bn="মনোযোগ, ধৈর্য ও বিশ্বাসের সাথে নির্মিত।">
+               Built with focus, patience & faith.
+            </p>
+            <p class="text-slate-500 dark:text-slate-500 text-xs">
+                &copy; <span id="year"></span> ANIK AHMED. All Rights Reserved.
+            </p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Set Year in Footer
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // -------------------------------------------------------------
+        // 1. DUAL THEME (DARK / LIGHT MODE) SWITCH
+        // -------------------------------------------------------------
+        const themeBtn = document.getElementById('theme-btn');
+        const themeIcon = document.getElementById('theme-icon');
+        const html = document.documentElement;
+
+        function setTheme(isDark) {
+            if (isDark) {
+                html.classList.add('dark');
+                html.classList.remove('light');
+                themeIcon.className = 'fa-solid fa-sun text-amber-400';
+            } else {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                themeIcon.className = 'fa-solid fa-moon text-slate-700';
+            }
+        }
+
+        // Default to dark mode
+        setTheme(true);
+
+        themeBtn.addEventListener('click', () => {
+            const isDark = html.classList.contains('dark');
+            setTheme(!isDark);
+        });
+
+        // -------------------------------------------------------------
+        // 2. LANGUAGE SWITCHER (EN / BN) WITH TYPEWRITER RESTART
+        // -------------------------------------------------------------
+        let currentLang = 'EN';
+        const langBtn = document.getElementById('lang-btn');
+        const langText = document.getElementById('lang-text');
+        const translatableElems = document.querySelectorAll('[data-en]');
+        const alienTextElem = document.getElementById('alien-text');
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            langText.textContent = lang === 'EN' ? 'BN' : 'EN';
+            
+            translatableElems.forEach(el => {
+                if (el.id === 'typewriter-text') return; // Handled separately by typewriter
+                const text = el.getAttribute(`data-${lang.toLowerCase()}`);
+                if (text) el.innerHTML = text;
+            });
+
+            // Update active alien dialogue greeting
+            if (alienTextElem) {
+                alienTextElem.textContent = lang === 'EN' ? 'Hi! 👋' : 'হ্যালো! 👋';
+            }
+
+            // Restart typewriter animation on language change
+            startTypewriter();
+        }
+
+        langBtn.addEventListener('click', () => {
+            setLanguage(currentLang === 'EN' ? 'BN' : 'EN');
+        });
+
+        // -------------------------------------------------------------
+        // 3. AUDIO BACKGROUND PLAYER
+        // -------------------------------------------------------------
+        const musicBtn = document.getElementById('music-btn');
+        const musicIcon = document.getElementById('music-icon');
+        const bgAudio = document.getElementById('bg-audio');
+        let isPlaying = false;
+
+        musicBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                bgAudio.pause();
+                musicIcon.className = 'fa-solid fa-music text-slate-400';
+                musicBtn.classList.remove('animate-pulse', 'text-skyblue-400');
+            } else {
+                bgAudio.play().then(() => {
+                    musicIcon.className = 'fa-solid fa-pause text-skyblue-400';
+                    musicBtn.classList.add('animate-pulse', 'text-skyblue-400');
+                }).catch(err => {
+                    console.log('Audio playback prevented or failed:', err);
+                });
+            }
+            isPlaying = !isPlaying;
+        });
+
+        // -------------------------------------------------------------
+        // 4. 3D ALIEN SHIP INTRO ANIMATION (Three.js)
+        // -------------------------------------------------------------
+        const canvas = document.getElementById('alien-canvas');
+        const dialog = document.getElementById('alien-dialog');
+        const replayBtn = document.getElementById('alien-replay-btn');
+
+        let scene, camera, renderer, ufoGroup, alienHead;
+        let animationStage = 0; // 0: Idle top, 1: Descending, 2: Hover & Greeting, 3: Ascending/Leaving
+        let animProgress = 0;
+
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 0, 15);
+
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
+            dirLight.position.set(5, 10, 7);
+            scene.add(dirLight);
+
+            const pointLight = new THREE.PointLight(0x800020, 2, 20);
+            pointLight.position.set(-5, -5, 5);
+            scene.add(pointLight);
+
+            // Construct 3D UFO Group
+            ufoGroup = new THREE.Group();
+
+            // 1. Saucer Base (Metallic Dark Maroon/Grey Disc)
+            const discGeo = new THREE.CylinderGeometry(3, 1.2, 0.8, 32);
+            const discMat = new THREE.MeshStandardMaterial({
+                color: 0x4a0e17,
+                metalness: 0.8,
+                roughness: 0.2
+            });
+            const disc = new THREE.Mesh(discGeo, discMat);
+            ufoGroup.add(disc);
+
+            // 2. Glass Dome
+            const domeGeo = new THREE.SphereGeometry(1.6, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+            const domeMat = new THREE.MeshPhysicalMaterial({
+                color: 0x38bdf8,
+                transparent: true,
+                opacity: 0.5,
+                roughness: 0.1,
+                transmission: 0.9
+            });
+            const dome = new THREE.Mesh(domeGeo, domeMat);
+            dome.position.y = 0.4;
+            ufoGroup.add(dome);
+
+            // 3. Glowing Bottom Ring Lights
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2;
+                const lightGeo = new THREE.SphereGeometry(0.2, 16, 16);
+                const lightMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+                const lightMesh = new THREE.Mesh(lightGeo, lightMat);
+                lightMesh.position.set(Math.cos(angle) * 2, -0.3, Math.sin(angle) * 2);
+                ufoGroup.add(lightMesh);
+            }
+
+            // 4. Alien (Green creature inside dome)
+            const alienGroup = new THREE.Group();
+            
+            // Head
+            const headGeo = new THREE.SphereGeometry(0.5, 16, 16);
+            headGeo.scale(1, 1.3, 1);
+            const alienMat = new THREE.MeshStandardMaterial({ color: 0x2ec4b6, roughness: 0.4 });
+            alienHead = new THREE.Mesh(headGeo, alienMat);
+            alienHead.position.y = 0.7;
+            alienGroup.add(alienHead);
+
+            // Big Alien Eyes
+            const eyeGeo = new THREE.SphereGeometry(0.15, 16, 16);
+            eyeGeo.scale(1.2, 1.8, 0.8);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0x050505 });
+            
+            const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+            leftEye.position.set(-0.18, 0.8, 0.38);
+            leftEye.rotation.y = -0.2;
+            alienGroup.add(leftEye);
+
+            const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+            rightEye.position.set(0.18, 0.8, 0.38);
+            rightEye.rotation.y = 0.2;
+            alienGroup.add(rightEye);
+
+            ufoGroup.add(alienGroup);
+
+            // Hide initially way up high
+            ufoGroup.position.set(0, 15, 0);
+            ufoGroup.rotation.x = 0.2;
+            scene.add(ufoGroup);
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Animation Loop
+        function startAlienAnimationSequence() {
+            animationStage = 1; // Start descent
+            animProgress = 0;
+            dialog.style.opacity = '0';
+            dialog.style.display = 'none';
+            ufoGroup.position.set(0, 15, 0);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = Date.now() * 0.002;
+
+            if (ufoGroup) {
+                ufoGroup.rotation.y += 0.015;
+                
+                if (animationStage === 1) { // Descending down to middle
+                    ufoGroup.position.y += (1 - ufoGroup.position.y) * 0.04;
+                    ufoGroup.rotation.z = Math.sin(time * 2) * 0.1;
+
+                    if (Math.abs(ufoGroup.position.y - 1) < 0.2) {
+                        animationStage = 2; // Hover & greet
+                        animProgress = 0;
+                    }
+                } 
+                else if (animationStage === 2) { // Hovering & Showing Greeting
+                    ufoGroup.position.y = 1 + Math.sin(time * 3) * 0.2;
+                    animProgress += 0.01;
+
+                    const vector = ufoGroup.position.clone();
+                    vector.y += 2.2;
+                    vector.project(camera);
+
+                    const x = (vector.x * .5 + .5) * window.innerWidth;
+                    const y = (-(vector.y * .5) + .5) * window.innerHeight;
+
+                    dialog.style.display = 'block';
+                    dialog.style.left = `${x}px`;
+                    dialog.style.top = `${y}px`;
+                    
+                    setTimeout(() => {
+                        dialog.style.opacity = '1';
+                        dialog.style.transform = 'translate(-50%, -100%) scale(1)';
+                    }, 50);
+
+                    if (alienHead) {
+                        alienHead.rotation.z = Math.sin(time * 10) * 0.15;
+                    }
+
+                    if (animProgress > 3.5) {
+                        animationStage = 3;
+                        dialog.style.opacity = '0';
+                        dialog.style.transform = 'translate(-50%, -100%) scale(0.5)';
+                    }
+                } 
+                else if (animationStage === 3) { // Ascending back up into space
+                    ufoGroup.position.y += (18 - ufoGroup.position.y) * 0.05;
+                    ufoGroup.position.x += 0.1;
+                    ufoGroup.rotation.z -= 0.02;
+
+                    if (ufoGroup.position.y > 14) {
+                        animationStage = 0;
+                        dialog.style.display = 'none';
+                    }
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Replay button listener
+        replayBtn.addEventListener('click', () => {
+            startAlienAnimationSequence();
+        });
+
+        // -------------------------------------------------------------
+        // 5. INTERSECTION OBSERVER FOR SCROLL ANIMATIONS
+        // -------------------------------------------------------------
+        const observerOptions = {
+            threshold: 0.2
+        };
+
+        const scrollObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+
+                    // If Future Goals section comes into view, trigger typewriter
+                    if (entry.target.id === 'goals') {
+                        startTypewriter();
+                    }
+                }
+            });
+        }, observerOptions);
+
+        // Attach observer to animated elements
+        document.querySelectorAll('.anim-top-down, .hobby-card, .anim-bottom-up, #goals').forEach(el => {
+            scrollObserver.observe(el);
+        });
+
+        // -------------------------------------------------------------
+        // 6. TYPEWRITER ANIMATION FOR FUTURE GOALS
+        // -------------------------------------------------------------
+        let typewriterTimeout;
+        function startTypewriter() {
+            clearTimeout(typewriterTimeout);
+            const typewriterElem = document.getElementById('typewriter-text');
+            if (!typewriterElem) return;
+
+            const fullText = typewriterElem.getAttribute(`data-${currentLang.toLowerCase()}`);
+            typewriterElem.innerHTML = '';
+            
+            let i = 0;
+            function typeChar() {
+                if (i < fullText.length) {
+                    // Check if current char starts an HTML entity like &ldquo;
+                    if (fullText[i] === '&') {
+                        const semiIndex = fullText.indexOf(';', i);
+                        if (semiIndex !== -1) {
+                            typewriterElem.innerHTML += fullText.substring(i, semiIndex + 1);
+                            i = semiIndex + 1;
+                        } else {
+                            typewriterElem.innerHTML += fullText[i];
+                            i++;
+                        }
+                    } else {
+                        typewriterElem.innerHTML += fullText[i];
+                        i++;
+                    }
+                    typewriterTimeout = setTimeout(typeChar, 45); // Speed of typing
+                }
+            }
+            typeChar();
+        }
+
+        // Initialize Everything on Window Load
+        window.onload = function() {
+            initThreeJS();
+            animate();
+            
+            // Trigger Alien Animation on page load
+            setTimeout(() => {
+                startAlienAnimationSequence();
+            }, 500);
+        };
+
+    </script>
+</body>
+</html>
